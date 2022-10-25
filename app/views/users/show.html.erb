@@ -1,0 +1,146 @@
+<div class='container'>
+  <div class='row'>
+    <div class='col-md-3'>
+      <h2>User info</h2>
+      <%= render 'info',user: @user %>
+      <h2 class='mt-3'>New book</h2>
+      <%= render 'books/form', book: @book %>
+    </div>
+
+    <div class='col-md-8 offset-md-1'>
+      <h2>Books</h2>
+      <%= render 'books/index',books: @books %>
+
+      <div class="table_width">
+        <!-- 今日と前日の投稿数 -->
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>今日の投稿数</th>
+              <th>前日の投稿数</th>
+              <th>前日比</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><%= @today_book.count %></td>
+              <td><%= @yesterday_book.count %></td>
+              <td>
+                <% if @yesterday_book.count == 0 %>
+                  <p>前日の投稿はありません</p>
+                <% else %>
+                  <% @the_day_before = @today_book.count / @yesterday_book.count.to_f %>
+                  <%= (@the_day_before * 100).round %>
+                <% end %>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- 今週と前週の投稿数 -->
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>今週の投稿数</th>
+              <th>前週の投稿数</th>
+              <th>前週比</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><%= @this_week_book.count %></td>
+              <td><%= @last_week_book.count %></td>
+              <td>
+                <% if @last_week_book.count == 0 %>
+                  <p>前週の投稿はありません</p>
+                <% else %>
+                  <% @the_week_before = @this_week_book.count / @last_week_book.count.to_f %>
+                  <%= (@the_week_before * 100).round %>
+                <% end %>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- ７日分の投稿数 -->
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>６日前</th>
+              <th>５日前</th>
+              <th>４日前</th>
+              <th>３日前</th>
+              <th>２日前</th>
+              <th>昨日</th>
+              <th>今日</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><%= @books.created_6days.count %></td>
+              <td><%= @books.created_5days.count %></td>
+              <td><%= @books.created_4days.count %></td>
+              <td><%= @books.created_3days.count %></td>
+              <td><%= @books.created_2days.count %></td>
+              <td><%= @yesterday_book.count %></td>
+              <td><%= @today_book.count %></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- グラフ -->
+        <canvas id="myLineChart"></canvas>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+          <script>
+            $(document).on('turbolinks:load', function() {
+              var ctx = document.getElementById("myLineChart");
+              var myLineChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                  labels: ['６日前', '５日前', '４日前', '３日前', '２日前', '１日前', '今日'],
+                  datasets: [
+                    {
+                      label: '投稿した本の数',
+                      data: [<%= @books.created_6days.count %>, <%= @books.created_5days.count %>, <%= @books.created_4days.count %>, <%= @books.created_3days.count %>, <%= @books.created_2days.count %>, <%= @yesterday_book.count %>, <%= @today_book.count %>],
+                      borderColor: "rgba(0,0,255,1)",
+                      backgroundColor: "rgba(0,0,0,0)"
+                    }
+                  ],
+                },
+                options: {
+                  title: {
+                    display: true,
+                    text: '７日間の投稿数の比較'
+                  },
+                  scales: {
+                    yAxes: [{
+                      ticks: {
+                        suggestedMax: 10,
+                        suggestedMin: 0,
+                        stepSize: 1,
+                        callback: function(value, index, values){
+                          return value
+                        }
+                      }
+                    }]
+                  },
+                }
+              });
+            });
+          </script>
+
+        <!-- 指定した日の記録（投稿数） -->
+        <%= form_with url: user_search_path(@user), local: false, method: :get do |f| %>
+          <%= f.date_field :created_at %>
+          <%= f.submit "検索", class: "btn btn-primary" %>
+        <% end %>
+
+        <div id="search_result">
+          <% if @search_book.present? %>
+            <%= render 'search', search_book: @search_book %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
