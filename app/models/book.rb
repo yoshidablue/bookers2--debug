@@ -10,6 +10,9 @@ class Book < ApplicationRecord
   validates :title, presence:true
   validates :body,  presence:true, length:{maximum:200}
 
+  # 新着順、評価の高い順
+  scope :latest,     -> { order(created_at: :desc) }
+  scope :star_count, -> { order(star: :desc) }
   # 投稿数（今日、前日、７日分、今週、前週）
   scope :created_today,     -> { where(created_at: Time.zone.now.all_day) }
   scope :created_yesterday, -> { where(created_at: 1.day.ago.all_day) }
