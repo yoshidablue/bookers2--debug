@@ -11,4 +11,8 @@ class SearchesController < ApplicationController
     end
   end
 
+  def search_tag
+    @books = Book.search(params[:keyword])
+  end
+
 end
